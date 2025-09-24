@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import plotly.express as px
 
 df = pd.read_csv('base_funcionarios.csv', delimiter=';')
 
@@ -11,13 +11,14 @@ genero = st.multiselect('Gênero:', df['Gênero'].unique(), default=df['Gênero'
 
 df_filt = df[df['Faixa Idade'].isin(faixas_idade) & df['Gênero'].isin(genero)]
 
-st.subheader('Distribuição por Faixa Etária e Gênero (Matplotlib)')
-# Exemplo usando Matplotlib
-fig, ax = plt.subplots(figsize=(8, 4))
-df_grouped = df_filt.groupby(['Faixa Idade', 'Gênero']).size().unstack().fillna(0)
-df_grouped.plot(kind='bar', ax=ax)
-plt.ylabel('Qtd Funcionários')
-plt.xlabel('Faixa Idade')
-plt.title('Funcionários por Faixa Etária e Gênero')
-plt.legend(title='Gênero')
-st.pyplot(fig)
+st.subheader('Distribuição por Faixa Etária e Gênero')
+fig1 = px.bar(df_filt, x='Faixa Idade', color='Gênero', barmode='group')
+st.plotly_chart(fig1)
+
+st.subheader('Distribuição por Tempo de Casa')
+fig2 = px.bar(df_filt, x='Faixa Tempo de Casa', color='Gênero', barmode='group')
+st.plotly_chart(fig2)
+
+st.subheader('Proporção de Gênero')
+fig3 = px.pie(df_filt, names='Gênero')
+st.plotly_chart(fig3)
