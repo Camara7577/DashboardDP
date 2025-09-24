@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 
+df = pd.read_csv('base_funcionarios.csv', delimiter=';')  # ou '\t'
+
+
 # Dados exemplo no formato DataFrame
 data = [
     {"admissao":"09/04/2025","sexo":"M","nascimento":"20/01/1967","gênero":"Homem"},
