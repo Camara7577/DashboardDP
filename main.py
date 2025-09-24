@@ -1,32 +1,33 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
-df = pd.read_csv('base_funcionarios.csv', delimiter=';')  # ou '\t'
+# Carregue a base de dados
+df = pd.read_csv('base_funcionarios.csv', delimiter=';')
 
+# Layout e título
+st.title('Dashboard RH – Visualização de Perfil dos Servidores')
 
-# Dados exemplo no formato DataFrame
-data = [
-    {"admissao":"09/04/2025","sexo":"M","nascimento":"20/01/1967","gênero":"Homem"},
-    {"admissao":"03/02/2025","sexo":"M","nascimento":"16/06/1968","gênero":"Homem"},
-    # ... adicione os demais registros
-]
-df = pd.DataFrame(data)
+# Filtros interativos
+faixas_idade = st.multiselect('Faixa Idade:', df['Faixa Idade'].unique(), default=df['Faixa Idade'].unique())
+genero = st.multiselect('Gênero:', df['Gênero'].unique(), default=df['Gênero'].unique())
 
-# Conversão para tipo de data (para filtros)
-df['admissao'] = pd.to_datetime(df['admissao'], dayfirst=True, errors='coerce')
-df['nascimento'] = pd.to_datetime(df['nascimento'], dayfirst=True, errors='coerce')
+df_filt = df[df['Faixa Idade'].isin(faixas_idade) & df['Gênero'].isin(genero)]
 
-# Filtros
-sexo = st.multiselect("Sexo", options=df['sexo'].unique(), default=df['sexo'].unique())
-genero = st.multiselect("Gênero", options=df['gênero'].unique(), default=df['gênero'].unique())
-ano_nasc = st.slider("Ano de nascimento", int(df['nascimento'].dt.year.min()), int(df['nascimento'].dt.year.max()),
-                     (int(df['nascimento'].dt.year.min()), int(df['nascimento'].dt.year.max())))
+# Gráficos
+st.subheader('Distribuição por Faixa Etária e Gênero')
+fig1 = px.bar(df_filt, x='Faixa Idade', color='Gênero', barmode='group')
+st.plotly_chart(fig1)
 
-# Aplicação dos filtros
-filtered_df = df[
-    (df['sexo'].isin(sexo)) &
-    (df['gênero'].isin(genero)) &
-    (df['nascimento'].dt.year.between(ano_nasc, ano_nasc[1]))
-]
+st.subheader('Distribuição por Tempo de Casa')
+fig2 = px.bar(df_filt, x='Faixa Tempo de Casa', color='Gênero', barmode='group')
+st.plotly_chart(fig2)
 
-st.dataframe(filtered_df)
+st.subheader('Proporção de Gênero')
+fig3 = px.pie(df_filt, names='Gênero')
+st.plotly_chart(fig3)
+
+# Tabela e download
+st.subheader('Base Completa Filtrada')
+st.dataframe(df_filt)
+st.download_button('Baixar dados filtrados', df_filt.to_csv(index=False), file_name='dados_filtrados.csv')
