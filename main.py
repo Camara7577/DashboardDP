@@ -5,9 +5,6 @@ import plotly.express as px
 # Carregar a base de dados do mesmo diretório do script
 df = pd.read_csv('base_funcionarios.csv', delimiter='\t')
 
-
-st.write('Colunas disponíveis:', df.columns.tolist())
-
 st.title('Dashboard RH – Visualização de Perfil dos Servidores')
 
 # Filtros interativos conforme as colunas da base
