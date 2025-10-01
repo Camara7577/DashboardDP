@@ -1,29 +1,57 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
-# Dados exemplo no formato DataFrame
-data = [
-    {"admissao":"09/04/2025","sexo":"M","nascimento":"20/01/1967","gênero":"Homem"},
-    {"admissao":"03/02/2025","sexo":"M","nascimento":"16/06/1968","gênero":"Homem"},
-    # ... adicione os demais registros
-]
-df = pd.DataFrame(data)
+# Carregar a base de dados do mesmo diretório do script
+df = pd.read_csv('base_funcionarios.csv', delimiter=';')
 
-# Conversão para tipo de data (para filtros)
-df['admissao'] = pd.to_datetime(df['admissao'], dayfirst=True, errors='coerce')
-df['nascimento'] = pd.to_datetime(df['nascimento'], dayfirst=True, errors='coerce')
+st.title('Dashboard RH – Visualização de Perfil dos Servidores')
 
-# Filtros
-sexo = st.multiselect("Sexo", options=df['sexo'].unique(), default=df['sexo'].unique())
-genero = st.multiselect("Gênero", options=df['gênero'].unique(), default=df['gênero'].unique())
-ano_nasc = st.slider("Ano de nascimento", int(df['nascimento'].dt.year.min()), int(df['nascimento'].dt.year.max()),
-                     (int(df['nascimento'].dt.year.min()), int(df['nascimento'].dt.year.max())))
+# Filtros interativos conforme as colunas da base
+faixas_idade = st.multiselect(
+    'Faixa Idade:',
+    df['Faixa Idade'].unique(),
+    default=df['Faixa Idade'].unique()
+)
+genero = st.multiselect(
+    'Gênero:',
+    df['Gênero'].unique(),
+    default=df['Gênero'].unique()
+)
 
-# Aplicação dos filtros
-filtered_df = df[
-    (df['sexo'].isin(sexo)) &
-    (df['gênero'].isin(genero)) &
-    (df['nascimento'].dt.year.between(ano_nasc, ano_nasc[1]))
-]
+# Filtro aplicado ao DataFrame
+df_filt = df[df['Faixa Idade'].isin(faixas_idade) & df['Gênero'].isin(genero)]
 
-st.dataframe(filtered_df)
+# Gráfico: Distribuição por Faixa Etária e Gênero
+st.subheader('Distribuição por Faixa Etária e Gênero')
+fig1 = px.bar(
+    df_filt,
+    x='Faixa Idade',
+    color='Gênero',
+    barmode='group',
+    labels={'count':'Total'}
+)
+st.plotly_chart(fig1)
+
+# Gráfico: Distribuição por Tempo de Casa
+st.subheader('Distribuição por Tempo de Casa')
+fig2 = px.bar(
+    df_filt,
+    x='Faixa Tempo de Casa',
+    color='Gênero',
+    barmode='group',
+    labels={'count':'Total'}
+)
+st.plotly_chart(fig2)
+
+# Gráfico: Proporção de Gênero
+st.subheader('Proporção de Gênero')
+fig3 = px.pie(
+    df_filt,
+    names='Gênero',
+    title='Proporção de colaboradores por gênero'
+)
+st.plotly_chart(fig3)
+
+# Opcional: Caso queira visualizar nomes das colunas para debug inicial, descomente:
+# st.write('Colunas disponíveis:', df.columns.tolist())
